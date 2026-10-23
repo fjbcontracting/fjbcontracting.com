@@ -308,9 +308,13 @@ p { margin: 0; max-width: 66ch; }
   scroll-margin-top: 130px;
   border: 1px solid var(--line);
   border-top: 4px solid var(--walnut);
-  padding: 1.8rem 1.6rem 1.6rem;
   background: var(--paper);
+  display: flex;
+  flex-direction: column;
 }
+.service-photo { width: 100%; height: auto; aspect-ratio: 508 / 454; object-fit: cover; background: var(--line); }
+.service-body { padding: 1.6rem 1.6rem 1.4rem; }
+.service-desc { margin-bottom: 1rem; }
 .service-group h2 { margin-bottom: 0.2rem; font-size: clamp(1.3rem, 2.2vw, 1.6rem); }
 .service-group .dim { width: 120px; margin: 0.9rem 0 1rem; }
 .service-list { list-style: none; padding: 0; margin: 0; }

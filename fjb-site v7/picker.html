@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>FJB Photo Picker</title>
+<style>
+  :root { --ink:#000; --paper:#fff; --navy:#213e76; --orange:#f7941d; --line:#d6d9df; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 "Helvetica Neue", Arial, sans-serif; padding-bottom: 140px; }
+  header { padding: 24px max(16px, env(safe-area-inset-left)); border-bottom:1px solid var(--line); }
+  h1 { margin:0 0 8px; font-size:1.6rem; }
+  header p { margin:0 0 6px; max-width:70ch; }
+  .filters { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .filters button { font:inherit; padding:6px 12px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); cursor:pointer; }
+  .filters button[aria-pressed="true"] { background:var(--ink); color:#fff; }
+  main { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px; padding:24px max(16px, env(safe-area-inset-left)); }
+  .card { border:1px solid var(--line); padding:12px; display:flex; flex-direction:column; gap:10px; }
+  .card.picked { border:3px solid var(--navy); padding:10px; }
+  .frame { background:#f4f5f7; display:flex; align-items:center; justify-content:center; min-height:160px; }
+  .frame img { max-width:100%; height:auto; display:block; }
+  .meta { font-size:0.9rem; }
+  .meta strong { display:block; }
+  .small { color:var(--ink); font-weight:700; }
+  .choices { display:flex; flex-wrap:wrap; gap:6px; }
+  .choices button { font:inherit; font-size:0.9rem; padding:6px 10px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); cursor:pointer; }
+  .choices button[aria-pressed="true"] { background:var(--navy); border-color:var(--navy); color:#fff; }
+  .choices button.skip[aria-pressed="true"] { background:var(--ink); border-color:var(--ink); }
+  .missing { padding:20px; text-align:center; }
+  .bar { position:fixed; left:0; right:0; bottom:0; background:var(--navy); color:#fff; padding:14px max(16px, env(safe-area-inset-left)); display:flex; flex-wrap:wrap; align-items:center; gap:12px; justify-content:space-between; }
+  .bar button { font:inherit; font-weight:700; padding:10px 16px; border:2px solid var(--orange); background:var(--orange); color:#000; cursor:pointer; }
+  .bar .reset { background:transparent; color:#fff; border-color:#fff; font-weight:400; }
+  textarea { width:100%; min-height:200px; font:14px/1.4 monospace; color:var(--ink); margin-top:8px; }
+  #out-wrap { padding:0 max(16px, env(safe-area-inset-left)) 24px; }
+  button:focus-visible { outline:3px solid var(--orange); outline-offset:2px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>FJB photo picker</h1>
+  <p>Every photo is shown at its true size. Under each one, choose where it should go. You can pick more than one spot for a photo, or mark it <strong>Skip</strong>.</p>
+  <p><strong>Big photo</strong> = the large photo at the top of a page (pick 1 to 3). <strong>Homepage</strong> = the small gallery on the homepage (pick 6 to 9). <strong>Portfolio</strong> = the full gallery page.</p>
+  <p>Your choices are saved in this browser, so you can stop and come back. When you're done, click <strong>Copy my picks</strong> and paste the result into the chat.</p>
+  <div class="filters" role="group" aria-label="Show">
+    <button type="button" data-filter="all" aria-pressed="true">Show all</button>
+    <button type="button" data-filter="todo" aria-pressed="false">Not decided yet</button>
+    <button type="button" data-filter="picked" aria-pressed="false">Picked</button>
+  </div>
+</header>
+<main id="grid"></main>
+<div id="out-wrap" hidden>
+  <p><strong>If the copy button didn't work,</strong> select everything in this box and copy it:</p>
+  <textarea id="out" readonly></textarea>
+</div>
+<div class="bar">
+  <span id="count">0 photos picked</span>
+  <span>
+    <button type="button" class="reset" id="reset">Start over</button>
+    <button type="button" id="copy">Copy my picks</button>
+  </span>
+</div>
+<script>
+(function () {
+  var files = ["slider-img1.jpg","slider-img2.jpg","slider-img3.jpg"];
+  for (var i = 2; i <= 9; i++) files.push("page1-img" + i + ".jpg");
+  [100,101,102,103,104,105,106,129,9,10,11,12,13,14,15,16,33,128,35,36,37,38,39,40,
+   44,45,46,47,48,49,50,51,52,53,60,55,56,57,58,59,1,2,3,4,5,6,7,8,127,700,701,702,703,704,705,706,
+   707,708,709,720,711,712,713,714,715,716,717,718,719].forEach(function (n) { files.push("page4-img" + n + ".jpg"); });
+
+  var KEY = "fjb-picker-v1";
+  var CHOICES = [["big","Big photo"],["home","Homepage"],["port","Portfolio"],["skip","Skip"]];
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { state = {}; }
+  var dims = {};
+  var filter = "all";
+  var grid = document.getElementById("grid");
+
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function picks(f) { return state[f] || []; }
+  function isPicked(f) { var p = picks(f); return p.length && p.indexOf("skip") === -1; }
+
+  function render() {
+    grid.innerHTML = "";
+    files.forEach(function (f) {
+      var p = picks(f);
+      if (filter === "todo" && p.length) return;
+      if (filter === "picked" && !isPicked(f)) return;
+      var card = document.createElement("div");
+      card.className = "card" + (isPicked(f) ? " picked" : "");
+      var frame = document.createElement("div");
+      frame.className = "frame";
+      var img = new Image();
+      img.alt = f;
+      img.loading = "lazy";
+      img.src = f;
+      img.onload = function () {
+        dims[f] = img.naturalWidth + "×" + img.naturalHeight;
+        size.textContent = dims[f] + " pixels" + (img.naturalWidth < 500 ? " (small)" : "");
+        if (img.naturalWidth < 500) size.className = "small";
+      };
+      img.onerror = function () { frame.innerHTML = '<div class="missing">Not on GitHub yet</div>'; size.textContent = "missing"; };
+      frame.appendChild(img);
+      var meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerHTML = "<strong>" + f + "</strong>";
+      var size = document.createElement("span");
+      size.textContent = dims[f] ? dims[f] + " pixels" : "loading…";
+      meta.appendChild(size);
+      var ch = document.createElement("div");
+      ch.className = "choices";
+      CHOICES.forEach(function (c) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = c[1];
+        if (c[0] === "skip") b.className = "skip";
+        b.setAttribute("aria-pressed", String(p.indexOf(c[0]) !== -1));
+        b.addEventListener("click", function () {
+          var cur = picks(f).slice();
+          var at = cur.indexOf(c[0]);
+          if (at !== -1) cur.splice(at, 1);
+          else if (c[0] === "skip") cur = ["skip"];
+          else { cur = cur.filter(function (x) { return x !== "skip"; }); cur.push(c[0]); }
+          if (cur.length) state[f] = cur; else delete state[f];
+          save();
+          render();
+        });
+        ch.appendChild(b);
+      });
+      card.appendChild(frame); card.appendChild(meta); card.appendChild(ch);
+      grid.appendChild(card);
+    });
+    var n = files.filter(isPicked).length;
+    document.getElementById("count").textContent = n + (n === 1 ? " photo picked" : " photos picked");
+  }
+
+  function summary() {
+    var groups = { big: [], home: [], port: [] };
+    files.forEach(function (f) {
+      picks(f).forEach(function (k) { if (groups[k]) groups[k].push(f + (dims[f] ? " (" + dims[f] + ")" : "")); });
+    });
+    return "BIG PHOTOS:\n" + (groups.big.join("\n") || "(none)") +
+      "\n\nHOMEPAGE GALLERY:\n" + (groups.home.join("\n") || "(none)") +
+      "\n\nPORTFOLIO:\n" + (groups.port.join("\n") || "(none)");
+  }
+
+  document.getElementById("copy").addEventListener("click", function () {
+    var text = summary();
+    var out = document.getElementById("out");
+    out.value = text;
+    var btn = this;
+    var done = function () { btn.textContent = "Copied. Paste it in the chat."; setTimeout(function () { btn.textContent = "Copy my picks"; }, 3000); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {
+        document.getElementById("out-wrap").hidden = false; out.focus(); out.select();
+      });
+    } else {
+      document.getElementById("out-wrap").hidden = false; out.focus(); out.select();
+    }
+  });
+  var resetBtn = document.getElementById("reset");
+  resetBtn.addEventListener("click", function () {
+    if (resetBtn.dataset.confirm !== "1") {
+      resetBtn.dataset.confirm = "1"; resetBtn.textContent = "Click again to clear all";
+      setTimeout(function () { resetBtn.dataset.confirm = ""; resetBtn.textContent = "Start over"; }, 4000);
+      return;
+    }
+    state = {}; save(); resetBtn.dataset.confirm = ""; resetBtn.textContent = "Start over"; render();
+  });
+  document.querySelectorAll("[data-filter]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      filter = b.dataset.filter;
+      document.querySelectorAll("[data-filter]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      render();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>
