@@ -1,12 +1,12 @@
-/* Layout concept: architectural drawing sheet. White paper, black ink, walnut bands
-   for the millwork shop, brass dimension lines as the one recurring mark. */
+/* Layout concept: architectural drawing sheet. White paper, black ink, navy bands
+   from the FJB logo, orange dimension lines as the one recurring mark. */
 :root {
-  --paper: #fbfaf7;
+  --paper: #ffffff;
   --ink: #000000;
-  --walnut: #3b2a1e;
-  --walnut-deep: #2a1d14;
-  --brass: #a47a3d;
-  --line: #d9d4cb;
+  --walnut: #213e76;
+  --walnut-deep: #182e59;
+  --brass: #f7941d;
+  --line: #d6d9df;
   --white: #ffffff;
   --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
@@ -86,14 +86,16 @@ p { margin: 0; max-width: 66ch; }
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  min-height: 74px;
+  min-height: 84px;
 }
 .brand {
   text-decoration: none;
   display: flex;
-  flex-direction: column;
-  line-height: 1;
+  align-items: center;
+  gap: 0.8rem;
+  line-height: 1.25;
 }
+.brand-logo { width: 60px; height: 60px; flex: none; }
 .brand-name {
   font-family: var(--display);
   font-variation-settings: "wdth" 125;
@@ -102,10 +104,11 @@ p { margin: 0; max-width: 66ch; }
   letter-spacing: 0.04em;
 }
 .brand-sub {
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  margin-top: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
+@media (max-width: 400px) { .brand-sub { display: none; } }
 .nav ul {
   list-style: none;
   margin: 0;
@@ -372,9 +375,9 @@ form.contact { display: flex; flex-direction: column; gap: 1.1rem; }
   max-height: 100vh;
   width: 100vw;
   height: 100vh;
-  background: rgba(20, 14, 10, 0.94);
+  background: rgba(10, 18, 36, 0.95);
 }
-.lightbox::backdrop { background: rgba(20, 14, 10, 0.94); }
+.lightbox::backdrop { background: rgba(10, 18, 36, 0.95); }
 .lightbox-inner {
   height: 100%;
   display: grid;
