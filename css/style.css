@@ -86,7 +86,8 @@ p { margin: 0; max-width: 66ch; }
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  min-height: 84px;
+  min-height: 112px;
+  padding-block: 0.5rem;
 }
 .brand {
   text-decoration: none;
@@ -95,7 +96,8 @@ p { margin: 0; max-width: 66ch; }
   gap: 0.8rem;
   line-height: 1.25;
 }
-.brand-logo { width: 60px; height: 60px; flex: none; }
+.brand-logo { width: 92px; height: 92px; flex: none; }
+@media (max-width: 760px) { .brand-logo { width: 68px; height: 68px; } }
 .brand-name {
   font-family: var(--display);
   font-variation-settings: "wdth" 125;
@@ -182,11 +184,12 @@ p { margin: 0; max-width: 66ch; }
 }
 .hero-lede { font-size: 1.2rem; margin-top: 0.2rem; }
 .hero-photo {
-  aspect-ratio: 4 / 3;
   width: 100%;
-  object-fit: cover;
+  max-width: 508px;
+  height: auto;
   background: var(--line);
 }
+.hero-photo-frame { justify-self: center; width: 100%; max-width: 508px; }
 .hero-photo-frame { position: relative; }
 .hero-photo-frame figcaption {
   font-size: 0.85rem;
@@ -290,16 +293,17 @@ p { margin: 0; max-width: 66ch; }
 }
 .split > * { min-width: 0; }
 .prose { display: flex; flex-direction: column; gap: 1.2rem; }
-.side-photo { aspect-ratio: 4 / 5; width: 100%; object-fit: cover; background: var(--line); }
+.side-photo { width: 100%; max-width: 508px; height: auto; background: var(--line); }
 @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
 
 /* Services */
 .service-groups {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0 clamp(2rem, 5vw, 4.5rem);
 }
-.service-group h2 { margin-bottom: 0.2rem; }
+.service-group h2 { margin-bottom: 0.2rem; font-size: clamp(1.35rem, 2.4vw, 1.75rem); }
+.service-group { scroll-margin-top: 130px; }
 .service-list { list-style: none; padding: 0; margin: 0; }
 .service-list li {
   padding: 0.85rem 0;
@@ -307,7 +311,7 @@ p { margin: 0; max-width: 66ch; }
   font-weight: 500;
 }
 .service-list li:last-child { border-bottom: 1px solid var(--line); }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .service-groups { grid-template-columns: 1fr; gap: 3rem; }
 }
 
@@ -420,3 +424,60 @@ form.contact { display: flex; flex-direction: column; gap: 1.1rem; }
   .grid img { transition: none; }
   .grid a:hover img { transform: none; }
 }
+
+/* Service tiles (home) */
+.tiles-section { padding-block: 0 clamp(1rem, 3vw, 2rem); }
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  padding: 1.8rem 1.6rem 1.6rem;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--walnut);
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--paper);
+}
+.tile h2 { font-size: clamp(1.3rem, 2.2vw, 1.6rem); }
+.tile .dim { margin: 0.9rem 0 1rem; width: 120px; }
+.tile p { flex: 1; }
+.tile-link {
+  margin-top: 1.4rem;
+  font-weight: 700;
+  border-bottom: 2px solid var(--brass);
+  align-self: flex-start;
+}
+.tile:hover { border-color: var(--walnut); border-top-color: var(--walnut); }
+@media (max-width: 860px) { .tiles { grid-template-columns: 1fr; } }
+
+/* Homepage gallery: 5 small tiles across, never larger than the photos */
+.grid-home { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.grid-home a { aspect-ratio: 508 / 454; }
+@media (max-width: 560px) { .grid-home { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Portfolio: justified rows that keep each photo's shape */
+.rows {
+  --row: 240px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+}
+.rows::after { content: ""; flex-grow: 999; }
+.rows a {
+  display: block;
+  flex-grow: calc(var(--w) / var(--h) * 100);
+  flex-basis: calc(var(--row) * var(--w) / var(--h));
+  max-width: calc(var(--w) * 1px);
+  aspect-ratio: var(--w) / var(--h);
+  overflow: hidden;
+  background: var(--line);
+}
+.rows img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+.rows a:hover img { transform: scale(1.03); }
+@media (max-width: 560px) { .rows { --row: 150px; gap: 6px; } }
+@media (prefers-reduced-motion: reduce) { .rows img { transition: none; } .rows a:hover img { transform: none; } }
