@@ -106,11 +106,12 @@ p { margin: 0; max-width: 66ch; }
   letter-spacing: 0.04em;
 }
 .brand-sub {
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
 }
-@media (max-width: 400px) { .brand-sub { display: none; } }
+@media (max-width: 760px) { .brand-sub { font-size: 0.78rem; } }
 .nav ul {
   list-style: none;
   margin: 0;
@@ -300,19 +301,27 @@ p { margin: 0; max-width: 66ch; }
 .service-groups {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0 clamp(2rem, 5vw, 4.5rem);
+  gap: 16px;
+  align-items: stretch;
 }
-.service-group h2 { margin-bottom: 0.2rem; font-size: clamp(1.35rem, 2.4vw, 1.75rem); }
-.service-group { scroll-margin-top: 130px; }
+.service-group {
+  scroll-margin-top: 130px;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--walnut);
+  padding: 1.8rem 1.6rem 1.6rem;
+  background: var(--paper);
+}
+.service-group h2 { margin-bottom: 0.2rem; font-size: clamp(1.3rem, 2.2vw, 1.6rem); }
+.service-group .dim { width: 120px; margin: 0.9rem 0 1rem; }
 .service-list { list-style: none; padding: 0; margin: 0; }
 .service-list li {
   padding: 0.85rem 0;
   border-top: 1px solid var(--line);
   font-weight: 500;
 }
-.service-list li:last-child { border-bottom: 1px solid var(--line); }
+.service-list li:first-child { border-top: 0; }
 @media (max-width: 900px) {
-  .service-groups { grid-template-columns: 1fr; gap: 3rem; }
+  .service-groups { grid-template-columns: 1fr; gap: 16px; }
 }
 
 /* Contact */
@@ -454,10 +463,11 @@ form.contact { display: flex; flex-direction: column; gap: 1.1rem; }
 .tile:hover { border-color: var(--walnut); border-top-color: var(--walnut); }
 @media (max-width: 860px) { .tiles { grid-template-columns: 1fr; } }
 
-/* Homepage gallery: 5 small tiles across, never larger than the photos */
-.grid-home { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+/* Homepage gallery: 3 x 3, never larger than the photos */
+.grid-home { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .grid-home a { aspect-ratio: 508 / 454; }
-@media (max-width: 560px) { .grid-home { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .grid-home { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .grid-home { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; } }
 
 /* Portfolio: justified rows that keep each photo's shape */
 .rows {
